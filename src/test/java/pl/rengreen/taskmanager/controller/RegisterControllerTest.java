@@ -9,7 +9,6 @@ import pl.rengreen.taskmanager.model.User;
 import pl.rengreen.taskmanager.service.UserService;
 
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 

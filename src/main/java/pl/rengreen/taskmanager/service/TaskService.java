@@ -28,4 +28,6 @@ public interface TaskService {
     void assignTaskToUser(Task task, User user);
 
     void unassignTask(Task task);
+
+    List<Task> getAllByMyProject(User user);
 }

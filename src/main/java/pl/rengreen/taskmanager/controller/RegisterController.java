@@ -35,7 +35,7 @@ public class RegisterController {
 
         if (userService.isUserEmailPresent(user.getEmail())) {
             model.addAttribute("exist", true);
-            return "register";
+            return "forms/register";
         }
 
         userService.createUser(user);

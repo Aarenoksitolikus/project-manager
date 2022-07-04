@@ -3,7 +3,7 @@
       lang="en">
 <head>
     <!--/*/ <th:block th:include="fragments/head :: head"></th:block> /*/-->
-    <title>Task Manager</title>
+    <title>Project Manager</title>
 </head>
 
 <body>
@@ -12,7 +12,7 @@
 </header>
 
 <main class="container">
-    <h1 class="display-4">Welcome to Task Manager</h1>
+    <h1 class="display-4">Welcome to Project Manager</h1>
     <p class="lead">This application will help you get stuff done</p>
 
     <hr class="my-4">
@@ -20,13 +20,22 @@
 
     <p>Admin (manager) can:</p>
     <ul>
-        <li>Create task and assign task to any user</li>
+        <li>Create project and assign any user project manager for the project</li>
+        <li>Create task and assign it to any user</li>
         <li>View list of all users with possibility to delete user</li>
         <li>View list of all tasks with editing or deleting task</li>
+        <li>View list of all projects with editing or deleting project</li>
+    </ul>
+    <p>Common user assigned as Project Manager can:</p>
+    <ul>
+        <li>View list of all projects he/she is involved in </li>
+        <li>View list of all tasks in projects he/she is involved in with editing or deleting task only tasks assigned to him/her</li>
+        <li>View list of all users with no action allowed</li>
+        <li>View list of all tasks but edit or delete only tasks for which he is responsible</li>
     </ul>
         <p>Common user (employee) can:</p>
     <ul>
-        <li>Create task only for himself</li>
+        <li>View list of all projects he/she is involved in</li>
         <li>View list of all users with no action allowed</li>
         <li>View list of all tasks but edit or delete only tasks for which he is responsible</li>
     </ul>

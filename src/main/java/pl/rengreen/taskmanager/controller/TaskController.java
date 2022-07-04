@@ -8,13 +8,17 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import pl.rengreen.taskmanager.model.Project;
 import pl.rengreen.taskmanager.model.Task;
 import pl.rengreen.taskmanager.model.User;
+import pl.rengreen.taskmanager.service.ProjectService;
 import pl.rengreen.taskmanager.service.TaskService;
 import pl.rengreen.taskmanager.service.UserService;
 
 import javax.validation.Valid;
 import java.security.Principal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class TaskController {
@@ -22,10 +26,13 @@ public class TaskController {
     private TaskService taskService;
     private UserService userService;
 
+    private ProjectService projectService;
+
     @Autowired
-    public TaskController(TaskService taskService, UserService userService) {
+    public TaskController(TaskService taskService, UserService userService, ProjectService projectService) {
         this.taskService = taskService;
         this.userService = userService;
+        this.projectService = projectService;
     }
 
     @GetMapping("/tasks")
@@ -47,7 +54,15 @@ public class TaskController {
         User signedUser = userService.getUserByEmail(email);
         boolean isAdminSigned = request.isUserInRole("ROLE_ADMIN");
 
-        model.addAttribute("tasks", taskService.findAll());
+        List<Task> tasks;
+
+        if (isAdminSigned) {
+            tasks = taskService.findAll();
+        } else {
+            tasks = taskService.getAllByMyProject(signedUser);
+        }
+
+        model.addAttribute("tasks", tasks);
         model.addAttribute("users", userService.findAll());
         model.addAttribute("signedUser", signedUser);
         model.addAttribute("isAdminSigned", isAdminSigned);
@@ -61,6 +76,8 @@ public class TaskController {
 
         Task task = new Task();
         task.setCreatorName(user.getName());
+        List<Project> projectCandidates = projectService.getAllProjects();
+        model.addAttribute("projectCandidates", projectCandidates);
         if (request.isUserInRole("ROLE_USER")) {
             task.setOwner(user);
         }
@@ -80,6 +97,8 @@ public class TaskController {
 
     @GetMapping("/task/edit/{id}")
     public String showFilledTaskForm(@PathVariable Long id, Model model) {
+        List<Project> projects = projectService.getAllProjects();
+        model.addAttribute("projectCandidates", projects);
         model.addAttribute("task", taskService.getTaskById(id));
         return "forms/task-edit";
     }

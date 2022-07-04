@@ -1,4 +1,4 @@
-# Task manager  
+# Project manager  
 
 Application for managing tasks for a team or a small company  
 **Live:** https://task-manager-r.herokuapp.com/  

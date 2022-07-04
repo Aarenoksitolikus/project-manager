@@ -3,24 +3,28 @@
       lang="en">
 <head>
     <!--/*/ <th:block th:include="fragments/head :: head"></th:block> /*/-->
-    <title>Tasks List</title>
+    <title>Projects</title>
 </head>
 
 <body>
 
 <header>
-    <!--/*/ <th:block th:include="fragments/header :: header('tasks-list')"></th:block> /*/-->
+    <!--/*/ <th:block th:include="fragments/header :: header('projects')"></th:block> /*/-->
 </header>
 
 <main class="container">
     <div class="card mb-3">
 
-        <h1 class="my-highest-header card-header">Tasks List
+        <h1 class="my-highest-header card-header">Projects List
+            <span sec:authorize="hasRole('ROLE_ADMIN')">
+                <a href="/project/create" class="btn btn-outline-info btn-lg float-right">Create New Project</a>
+            </span>
             <span th:unless="${onlyInProgress}">
-                <a href="/tasks/in-progress" class="btn btn-outline-info btn-lg float-right">Hide Completed Tasks</a>
+                <a href="/projects/in-progress"
+                   class="btn btn-outline-info btn-lg float-right mr-2">Hide Finished Projects</a>
             </span>
             <span th:if="${onlyInProgress}">
-                <a href="/tasks" class="btn btn-outline-info btn-lg float-right">Show Completed Tasks</a>
+                <a href="/projects" class="btn btn-outline-info btn-lg float-right">Show Finished Projects</a>
             </span>
         </h1>
 
@@ -30,13 +34,12 @@
 
                 <thead class="table-primary">
                 <tr>
-                    <th style="width:40%" class="text-left">Task name</th>
+                    <th style="width:40%" class="text-left">Title</th>
                     <th style="width:12%">Date</th>
                     <th style="width:8%" class="d-none d-lg-table-cell">Days left</th>
-                    <!--                    <th style="width:8%" class="d-none d-lg-table-cell">Project</th>-->
-                    <th style="width:8%">Completed</th>
-                    <th style="width:8%" class="d-none d-lg-table-cell">Task owner</th>
-                    <th style="width:8%" class="d-none d-lg-table-cell">Project</th>
+                    <th style="width:8%">Status</th>
+                    <th style="width:8%" class="d-none d-lg-table-cell">Owner</th>
+                    <th style="width:8%" class="d-none d-lg-table-cell">Creator</th>
                     <th style="width:16%" class="d-none d-lg-table-cell" colspan="2">Actions</th>
                 </tr>
 
@@ -44,22 +47,22 @@
 
                 <tbody>
 
-                <tr th:each="t : ${tasks}"
-                    th:if="${!onlyInProgress or !t.completed}"
-                    th:with="isThisOneSigned=${t.owner!=null ? t.owner.equals(signedUser) : false}"
-                >
-                    <!--Task name and description link-->
+                <tr th:each="p : ${projects}"
+                    th:if="${!onlyInProgress or !p.completed}"
+                    th:with="isThisOneSigned=${p.getOwner()!=null ? p.getOwner().equals(signedUser) : false}">
+
+                    <!--Project name and description link-->
                     <td class="text-left">
                         <span>
                             <a data-toggle="modal" data-target="#modal-details"
-                               th:attr="data-target='#modal-details'+${t.id}"
-                               th:href="${'/task/' + t.id}"
+                               th:attr="data-target='#modal-details'+${p.getProjectId()}"
+                               th:href="${'/project/' + p.getProjectId()}"
                                class="nav-link my-link px-1 d-inline"
-                               th:text="${t.name}+' '"
+                               th:text="${p.getName()}+' '"
                             ></a>
                             <a data-toggle="modal" data-target="#modal-details"
-                               th:attr="data-target='#modal-details'+${t.id}"
-                               th:href="${'/task/' + t.id}"
+                               th:attr="data-target='#modal-details'+${p.getProjectId()}"
+                               th:href="${'/project/' + p.getProjectId()}"
                                class="btn-link d-inline"
                             >
                             <small class="badge badge-light">more</small>
@@ -69,46 +72,46 @@
                     </td>
 
                     <!--modal with task details-->
-                    <div class="modal" th:id="modal-details+${t.id}">
+                    <div class="modal" th:id="modal-details+${p.getProjectId()}">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h4 th:text="${t.name}" class="modal-title text-info"></h4>
+                                    <h4 th:text="${p.getName()}" class="modal-title text-info"></h4>
                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
                                 <div class="modal-body">
-                                    <p th:text="${'Description: '+t.description}"></p>
-                                    <p th:text="${'Date: '+#temporals.format(t.date, 'dd-MM-yyyy')}"></p>
-                                    <p th:text="${'Project: '+t.project.getName()}"></p>
-                                    <p th:if="${t.owner!=null}" th:text="${'Task owner: '+t.owner.getName()}"></p>
-                                    <p th:text="${'Task creator: '+t.creatorName}"></p>
+                                    <p th:text="${'Description: '+p.getDescription()}"></p>
+                                    <p th:text="${'Date: '+#temporals.format(p.getDate(), 'dd-MM-yyyy')}"></p>
+                                    <p th:if="${p.getOwner()!=null}"
+                                       th:text="${'Project owner: '+p.getOwner().getName()}"></p>
+                                    <p th:text="${'Project creator: '+p.getCreatorName()}"></p>
                                     <!--edit button-->
                                     <div th:if="${isAdminSigned or isThisOneSigned}" class="d-lg-none m-2">
-                                        <a th:href="${'/task/edit/' + t.id}"
+                                        <a th:href="${'/project/edit/' + p.getProjectId()}"
                                            class="btn btn-outline-success btn-sm">Edit</a>
                                     </div>
 
                                     <div th:unless="${isAdminSigned or isThisOneSigned}" class="d-lg-none m-2">
                                         <span data-toggle="tooltip" data-placement="top" data-html="true"
-                                              title="Only task owner or admin can edit this task">
-                                            <a th:href="${'/task/edit/' + t.id}"
+                                              title="Only project owner or admin can edit this project">
+                                            <a th:href="${'/project/edit/' + p.getProjectId()}"
                                                class="btn btn-outline-secondary btn-sm disabled">Edit</a>
                                         </span>
                                     </div>
                                     <!--delete button-->
                                     <div th:if="${isAdminSigned or isThisOneSigned}" class="d-lg-none m-2">
                                         <a data-toggle="modal" data-target="#modal-delete"
-                                           th:attr="data-target='#modal-delete'+${t.id}"
-                                           th:href="${'/task/delete/' + t.id}"
+                                           th:attr="data-target='#modal-delete'+${p.getProjectId()}"
+                                           th:href="${'/project/delete/' + p.getProjectId()}"
                                            class="btn btn-outline-danger btn-sm">Delete
                                         </a>
                                     </div>
 
                                     <div th:unless="${isAdminSigned or isThisOneSigned}" class="d-lg-none m-2">
                                         <span data-toggle="tooltip" data-placement="top" data-html="true"
-                                              title="Only task owner or admin can delete this task">
+                                              title="Only project owner or admin can delete this project">
                                             <a href="" class="btn btn-outline-secondary btn-sm disabled">Delete</a>
                                         </span>
                                     </div>
@@ -120,76 +123,73 @@
                             </div>
                         </div>
                     </div>
-                    <!--end of modal with task details-->
+                    <!--end of modal with project details-->
 
                     <!--Date-->
-                    <td th:text="${#temporals.format(t.date, 'dd-MM-yyyy')}"
-                        th:data-order="${t.date}"
+                    <td th:text="${#temporals.format(p.getDate(), 'dd-MM-yyyy')}"
+                        th:data-order="${p.getDate()}"
                     ></td>
 
                     <!--Days left-->
                     <td class="text-center col-1 d-none d-lg-table-cell"
-                        th:data-order="${t.date}">
-                        <!--/*/ <th:block th:include="fragments/days-left-until-deadline :: daysLeft(${t})"></th:block> /*/-->
+                        th:data-order="${p.getDate()}">
+                        <!--/*/ <th:block th:include="fragments/days-left-until-deadline-projects :: daysLeft(${p})"></th:block> /*/-->
                     </td>
 
                     <!--Completed / In progress-->
-                    <td th:data-order="${t.completed} ? 1 : 0"
+                    <td th:data-order="${p.completed} ? 1 : 0"
                         th:if="${isAdminSigned or isThisOneSigned}">
-                        <a th:href="${t.completed} ? ${'/task/unmark-done/' + t.id} : ${'/task/mark-done/' + t.id}"
-                           th:class="${t.owner==null} ? 'disabled nav-link my-link' : 'nav-link my-link'"
-                        ><i th:class="${t.completed} ? 'far fa-check-square my-check':'far fa-square my-check'"></i>
+                        <a th:href="${p.completed} ? ${'/project/unmark-done/' + p.getProjectId()} : ${'/project/mark-done/' + p.getProjectId()}"
+                           th:class="${p.getOwner()==null} ? 'disabled nav-link my-link' : 'nav-link my-link'">
+                            <i th:class="${p.completed} ? 'far fa-check-square my-check':'far fa-square my-check'"></i>
                         </a>
                     </td>
 
-                    <td th:data-order="${t.completed} ? 1 : 0"
+                    <td th:data-order="${p.completed} ? 1 : 0"
                         th:unless="${isAdminSigned or isThisOneSigned}">
                         <span data-toggle="tooltip" data-placement="top" data-html="true"
-                              title="Only task owner or admin can mark tasks completed/uncompleted">
-                            <a th:href="${t.completed} ? ${'/task/unmark-done/' + t.id} : ${'/task/mark-done/' + t.id}"
-                               class="disabled nav-link my-link"
-                            ><i th:class="${t.completed} ? 'far fa-check-square my-check':'far fa-square my-check'"></i>
+                              title="Only project owner or admin can mark tasks completed/uncompleted">
+                            <a th:href="${p.completed} ? ${'/project/unmark-done/' + p.getProjectId()} : ${'/project/mark-done/' + p.getProjectId()}"
+                               class="disabled nav-link my-link">
+                                <i th:class="${p.completed} ? 'far fa-check-square my-check':'far fa-square my-check'"></i>
                             </a>
                         </span>
                     </td>
 
-                    <!--Task owner-->
-                    <td th:if="${t.owner!=null}" class="d-none d-lg-table-cell">
-                        <div th:text="${t.owner.getName()}"></div>
+                    <!--Project owner-->
+                    <td th:if="${p.getOwner()!=null}" class="d-none d-lg-table-cell">
+                        <div th:text="${p.getOwner().getName()}"></div>
                     </td>
 
-                    <td class="text-center" th:unless="${t.owner!=null}">-</td>
-
-                    <!--Project-->
-                    <td th:if="${t.project!=null}" class="d-none d-lg-table-cell">
-                        <div th:text="${t.project.getName()}"></div>
-                    </td>
+                    <td class="text-center" th:unless="${p.getOwner()!=null}">-</td>
 
                     <!--Task creator-->
-                    <!--                    <td th:text="${t.creatorName}" class="d-none d-lg-table-cell"></td>-->
+                    <td th:text="${p.getCreatorName()}" class="d-none d-lg-table-cell"></td>
 
                     <!--edit button-->
-                    <td th:if="${isAdminSigned or isThisOneSigned}" class="d-none d-lg-table-cell">
-                        <a th:href="${'/task/edit/' + t.id}" class="btn btn-outline-success btn-sm">Edit</a>
+                    <td th:if="${isAdminSigned}" class="d-none d-lg-table-cell">
+                        <a th:href="${'/project/edit/' + p.getProjectId()}"
+                           class="btn btn-outline-success btn-sm">Edit</a>
                     </td>
 
-                    <td th:unless="${isAdminSigned or isThisOneSigned}" class="d-none d-lg-table-cell">
+                    <td th:unless="${isAdminSigned}" class="d-none d-lg-table-cell">
                         <span data-toggle="tooltip" data-placement="top" data-html="true"
-                              title="Only task owner or admin can edit this task">
-                        <a th:href="${'/task/edit/' + t.id}" class="btn btn-outline-secondary btn-sm disabled">Edit</a>
+                              title="Only project owner or admin can edit this project">
+                        <a th:href="${'/project/edit/' + p.getProjectId()}"
+                           class="btn btn-outline-secondary btn-sm disabled">Edit</a>
                         </span>
                     </td>
 
                     <!--delete button-->
-                    <td th:if="${isAdminSigned or isThisOneSigned}" class="d-none d-lg-table-cell">
+                    <td th:if="${isAdminSigned}" class="d-none d-lg-table-cell">
                         <a data-toggle="modal" data-target="#modal-delete"
-                           th:attr="data-target='#modal-delete'+${t.id}"
-                           th:href="${'/task/delete/' + t.id}"
+                           th:attr="data-target='#modal-delete'+${p.getProjectId()}"
+                           th:href="${'/project/delete/' + p.getProjectId()}"
                            class="btn btn-outline-danger btn-sm">Delete
                         </a>
                     </td>
 
-                    <td th:unless="${isAdminSigned or isThisOneSigned}" class="d-none d-lg-table-cell">
+                    <td th:unless="${isAdminSigned}" class="d-none d-lg-table-cell">
                         <span data-toggle="tooltip" data-placement="top" data-html="true"
                               title="Only task owner or admin can delete this task">
                         <a href="" class="btn btn-outline-secondary btn-sm disabled">Delete</a>
@@ -197,7 +197,7 @@
                     </td>
 
                     <!--modal for delete confirmation-->
-                    <div class="modal" th:id="modal-delete+${t.id }">
+                    <div class="modal" th:id="modal-delete+${p.getProjectId() }">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -207,13 +207,13 @@
                                     </button>
                                 </div>
                                 <div class="modal-body">
-                                    <p th:text="${'Are you sure you want to delete task: &quot '+t.name+'&quot?'}"></p>
+                                    <p th:text="${'Are you sure you want to delete task: &quot '+p.getName()+'&quot?'}"></p>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
                                         Cancel
                                     </button>
-                                    <a th:href="${'/task/delete/' + t.id}">
+                                    <a th:href="${'/project/delete/' + p.getProjectId()}">
                                         <span class="btn btn-danger">Delete</span></a>
                                 </div>
                             </div>

@@ -4,28 +4,26 @@
       lang="en">
 <head>
     <!--/*/ <th:block th:include="fragments/head :: head"></th:block> /*/-->
-    <title>Create New Task</title>
+    <title>Create New Project</title>
 </head>
 
 <body>
 
 <header>
-    <!--/*/ <th:block th:include="fragments/header :: header('create-new-task')"></th:block> /*/-->
+    <!--/*/ <th:block th:include="fragments/header :: header('projects')"></th:block> /*/-->
 </header>
 
 <main class="container">
     <div class="card mb-3">
 
-        <h1 class="my-highest-header card-header">Create new Task</h1>
+        <h1 class="my-highest-header card-header">Create new Project</h1>
 
         <div class="card card-body">
-            <form th:action="@{/task/create}" th:object="${task}" method="post">
+            <form th:action="@{/project/create}" th:object="${project}" method="post">
                 <input type="hidden" th:field="*{creatorName}"/>
-                <input type="hidden" th:field="*{owner}"/>
-
                 <!--name-->
                 <div class="form-group">
-                    <label for="name" class="form-control-label">Task name</label>
+                    <label for="name" class="form-control-label">Project name</label>
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
                             <span class="input-group-text">
@@ -41,21 +39,21 @@
 
                 <!--description-->
                 <div class="form-group">
-                    <label for="description" class="form-control-label">Task description</label>
+                    <label for="description" class="form-control-label">Project description</label>
                     <textarea class="form-control"
                               th:field="*{description}" id="description">  </textarea>
                     <div class="text text-danger"
                          th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
                 </div>
 
-                <!--project-->
+                <!--owner-->
                 <div class="form-group">
-                    <label for="project" class="form-control-label">Project</label>
-                    <select class="form-control" id="project" name="project" th:field="*{project}">
-                        <option th:each="p : ${projectCandidates}" th:value="${p.getProjectId()}" th:text="${p.getName()}">
+                    <label for="owner" class="form-control-label">Owner</label>
+                    <select class="form-control" id="owner" name="owner" th:field="*{owner}">
+                        <option th:each="c : ${ownerCandidates}" th:value="${c.getId()}" th:text="${c.getName()}">
                     </select>
                     <div class="text text-danger"
-                         th:if="${#fields.hasErrors('owner')}" th:errors="*{project}"></div>
+                         th:if="${#fields.hasErrors('owner')}" th:errors="*{owner}"></div>
                 </div>
 
                 <!--date-->

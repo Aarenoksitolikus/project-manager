@@ -50,6 +50,16 @@
                     </div>
                 </div>
 
+                <!--project-->
+                <div class="form-group">
+                    <label for="project" class="form-control-label">Project</label>
+                    <select class="form-control" id="project" name="project" th:field="*{project}">
+                        <option th:each="p : ${projectCandidates}" th:value="${p.getProjectId()}" th:text="${p.getName()}">
+                    </select>
+                    <div class="text text-danger"
+                         th:if="${#fields.hasErrors('owner')}" th:errors="*{project}"></div>
+                </div>
+
                 <!--date-->
                 <div class="form-group">
                     <label for="date" class="form-control-label">Date</label>

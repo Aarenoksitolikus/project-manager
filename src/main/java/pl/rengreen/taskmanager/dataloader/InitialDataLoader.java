@@ -7,15 +7,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
-import pl.rengreen.taskmanager.model.Role;
-import pl.rengreen.taskmanager.model.User;
-import pl.rengreen.taskmanager.model.Task;
-import pl.rengreen.taskmanager.service.RoleService;
-import pl.rengreen.taskmanager.service.TaskService;
-import pl.rengreen.taskmanager.service.UserService;
+import pl.rengreen.taskmanager.model.*;
+import pl.rengreen.taskmanager.service.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 @Component
 public class InitialDataLoader implements ApplicationListener<ContextRefreshedEvent> {
@@ -23,6 +20,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
     private UserService userService;
     private TaskService taskService;
     private RoleService roleService;
+    private ProjectService projectService;
+    private StatusService statusService;
     private final Logger logger = LoggerFactory.getLogger(InitialDataLoader.class);
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
@@ -36,10 +35,14 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
     private String defaultAdminImage;
 
     @Autowired
-    public InitialDataLoader(UserService userService, TaskService taskService, RoleService roleService) {
+    public InitialDataLoader(UserService userService, TaskService taskService,
+                             RoleService roleService, ProjectService projectService,
+                             StatusService statusService) {
         this.userService = userService;
         this.taskService = taskService;
         this.roleService = roleService;
+        this.projectService = projectService;
+        this.statusService = statusService;
     }
 
     @Override
@@ -74,46 +77,74 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 "mark@mail.com",
                 "Mark",
                 "112233",
-                "images/mark.jpg"));
+                "images/user.png"));
 
         //4
         userService.createUser(new User(
                 "ann@mail.com",
                 "Ann",
                 "112233",
-                "images/ann.jpg"));
+                "images/user.png"));
 
         //5
         userService.createUser(new User(
                 "ralf@mail.com",
                 "Ralf",
                 "112233",
-                "images/ralf.jpg"));
+                "images/user.png"));
 
         //6
         userService.createUser(new User(
                 "kate@mail.com",
                 "Kate",
                 "112233",
-                "images/kate.jpg"));
+                "images/user.png"));
 
         //7
         userService.createUser(new User(
                 "tom@mail.com",
                 "Tom",
                 "112233",
-                "images/tom.jpg"));
+                "images/user.png"));
 
         userService.findAll().stream()
                 .map(u -> "saved user: " + u.getName())
+                .forEach(logger::info);
+
+        //STATUSES -----------------------------------------------------------------------------------------------------
+
+        ProjectStatus inProgress = new ProjectStatus("In Progress");
+        statusService.createStatus(inProgress);
+
+        ProjectStatus done = new ProjectStatus("Done");
+        statusService.createStatus(done);
+
+        statusService.findAll().stream()
+                .map(s -> "saved project status: " + s.getName())
+                .forEach(logger::info);
+
+        //PROJECT ------------------------------------------------------------------------------------------------------
+
+        LocalDate today = LocalDate.now();
+
+        Project common = projectService.createProject(new Project(1,
+                "The Ultimate Web Design Checklist",
+                "Project on analytics and finalization of the site design before its delivery to the customer",
+                today.plusDays(200),
+                manager,
+                inProgress,
+                manager.getName(),
+                new ArrayList<User>(),
+                new ArrayList<Task>()));
+
+        projectService.getAllProjects().stream()
+                .map(p -> "saved project: " + p.getName())
                 .forEach(logger::info);
 
 
         //TASKS --------------------------------------------------------------------------------------------------------
         //tasks from Web Design Checklist
         //https://www.beewits.com/the-ultimate-web-design-checklist-things-to-do-when-launching-a-website/
-
-        LocalDate today = LocalDate.now();
 
         //1
         taskService.createTask(new Task(
@@ -122,7 +153,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 today.minusDays(40),
                 true,
                 userService.getUserByEmail("mark@mail.com").getName(),
-                userService.getUserByEmail("mark@mail.com")
+                userService.getUserByEmail("mark@mail.com"),
+                common
         ));
 
         //2
@@ -132,7 +164,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 today.minusDays(30),
                 true,
                 userService.getUserByEmail("ann@mail.com").getName(),
-                userService.getUserByEmail("ann@mail.com")
+                userService.getUserByEmail("ann@mail.com"),
+                common
         ));
 
         //3
@@ -142,7 +175,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 today.minusDays(20),
                 true,
                 userService.getUserByEmail("ralf@mail.com").getName(),
-                userService.getUserByEmail("ralf@mail.com")
+                userService.getUserByEmail("ralf@mail.com"),
+                common
         ));
 
         //4
@@ -152,7 +186,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 today.minusDays(10),
                 true,
                 userService.getUserByEmail("kate@mail.com").getName(),
-                userService.getUserByEmail("kate@mail.com")
+                userService.getUserByEmail("kate@mail.com"),
+                common
         ));
 
         //5
@@ -162,7 +197,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 today.minusDays(5),
                 false,
                 userService.getUserByEmail("manager@mail.com").getName(),
-                userService.getUserByEmail("kate@mail.com")
+                userService.getUserByEmail("kate@mail.com"),
+                common
         ));
 
         //6
@@ -172,7 +208,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 today.minusDays(2),
                 false,
                 userService.getUserByEmail("manager@mail.com").getName(),
-                userService.getUserByEmail("mark@mail.com")
+                userService.getUserByEmail("mark@mail.com"),
+                common
         ));
 
         //7
@@ -182,7 +219,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 today.minusDays(1),
                 false,
                 userService.getUserByEmail("manager@mail.com").getName(),
-                userService.getUserByEmail("mark@mail.com")
+                userService.getUserByEmail("mark@mail.com"),
+                common
         ));
 
         //8
@@ -192,7 +230,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 today,
                 false,
                 userService.getUserByEmail("manager@mail.com").getName(),
-                userService.getUserByEmail("ann@mail.com")
+                userService.getUserByEmail("ann@mail.com"),
+                common
         ));
 
         //9
@@ -202,7 +241,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 today.plusDays(1),
                 false,
                 userService.getUserByEmail("manager@mail.com").getName(),
-                userService.getUserByEmail("ann@mail.com")
+                userService.getUserByEmail("ann@mail.com"),
+                common
         ));
 
         //10
@@ -212,7 +252,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 today.plusDays(2),
                 false,
                 userService.getUserByEmail("manager@mail.com").getName(),
-                userService.getUserByEmail("kate@mail.com")
+                userService.getUserByEmail("kate@mail.com"),
+                common
         ));
 
         //11
@@ -222,7 +263,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 today.plusDays(3),
                 false,
                 userService.getUserByEmail("kate@mail.com").getName(),
-                userService.getUserByEmail("kate@mail.com")
+                userService.getUserByEmail("kate@mail.com"),
+                common
         ));
 
         //12
@@ -232,7 +274,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 today.plusDays(4),
                 false,
                 userService.getUserByEmail("ann@mail.com").getName(),
-                userService.getUserByEmail("ann@mail.com")
+                userService.getUserByEmail("ann@mail.com"),
+                common
         ));
 
         //13
@@ -242,7 +285,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 today.plusDays(5),
                 false,
                 userService.getUserByEmail("ralf@mail.com").getName(),
-                userService.getUserByEmail("ralf@mail.com")
+                userService.getUserByEmail("ralf@mail.com"),
+                common
         ));
 
         //14
@@ -252,7 +296,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 today.plusDays(6),
                 false,
                 userService.getUserByEmail("manager@mail.com").getName(),
-                userService.getUserByEmail("manager@mail.com")
+                userService.getUserByEmail("manager@mail.com"),
+                common
         ));
 
         //15
@@ -261,7 +306,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 "Check how the site looks on emulators such as ipadpeek, screenfly, mobilephonesimulator. Test the site using real devices you have accessible to you or use opendevicelab.com.",
                 today.plusDays(8),
                 false,
-                userService.getUserByEmail("manager@mail.com").getName()
+                userService.getUserByEmail("manager@mail.com").getName(),
+                common
         ));
 
         //16
@@ -270,7 +316,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 "Check that all pages have unique page titles (with a recommended length of fewer than 70 characters, including any keywords). Check that all pages have unique meta descriptions (with a recommended length of fewer than 156 characters, including keywords). Verify that pages have your chosen keywords included without any keyword stuffing (do not over-emphasize particular keywords).",
                 today.plusDays(10),
                 false,
-                userService.getUserByEmail("manager@mail.com").getName()
+                userService.getUserByEmail("manager@mail.com").getName(),
+                common
         ));
 
         //17
@@ -279,7 +326,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 "See that all page URLs consistently reflect site information architecture. If you have had another older website, make sure you have 301 redirects in place for all old URLs (redirecting old pages to new ones).",
                 today.plusDays(12),
                 false,
-                userService.getUserByEmail("manager@mail.com").getName()
+                userService.getUserByEmail("manager@mail.com").getName(),
+                common
         ));
 
         //18
@@ -288,7 +336,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 "Minify javascript and CSS files. Optimize the size of images and replace the existing images with the optimized images. Specify image dimensions for each image. Enable gzip compression on your hosting server.",
                 today.plusDays(14),
                 false,
-                userService.getUserByEmail("manager@mail.com").getName()
+                userService.getUserByEmail("manager@mail.com").getName(),
+                common
         ));
 
         //19
@@ -297,7 +346,8 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 "Create cover images for Social Media such as Facebook, Twitter, LinkedIn company page, Pinterest, Instagram or others as necessary. Register all social media properties and get them set up with profile images, cover pages, links back to the website.",
                 today.plusDays(16),
                 false,
-                userService.getUserByEmail("manager@mail.com").getName()
+                userService.getUserByEmail("manager@mail.com").getName(),
+                common
         ));
 
         //20
@@ -306,11 +356,13 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
                 "Send the finished site to the client and get feedback. Fix and change any requests by client. Give access to client to all accounts created on their behalf. Send updates to client and wait for client sign-off.",
                 today.plusDays(18),
                 false,
-                userService.getUserByEmail("manager@mail.com").getName()
+                userService.getUserByEmail("manager@mail.com").getName(),
+                common
         ));
 
         taskService.findAll().stream().map(t -> "saved task: '" + t.getName()
                 + "' for owner: " + getOwnerNameOrNoOwner(t)).forEach(logger::info);
+
     }
 
     private String getOwnerNameOrNoOwner(Task task) {

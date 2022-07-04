@@ -3,8 +3,8 @@ package pl.rengreen.taskmanager.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import pl.rengreen.taskmanager.model.Project;
 import pl.rengreen.taskmanager.model.Role;
-import pl.rengreen.taskmanager.model.Task;
 import pl.rengreen.taskmanager.model.User;
 import pl.rengreen.taskmanager.repository.RoleRepository;
 import pl.rengreen.taskmanager.repository.TaskRepository;
@@ -33,6 +33,8 @@ public class UserServiceImpl implements UserService {
         this.roleRepository = roleRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
+
+
 
     @Override
     public User createUser(User user) {
@@ -74,6 +76,11 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.getOne(id);
         user.getTasksOwned().forEach(task -> task.setOwner(null));
         userRepository.delete(user);
+    }
+
+    @Override
+    public List<User> getAllByMyProject(User user) {
+        return userRepository.findAllByProjectsContains(user.getId());
     }
 
 }

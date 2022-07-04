@@ -6,7 +6,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import pl.rengreen.taskmanager.model.User;
 import pl.rengreen.taskmanager.service.UserService;
+
+import java.security.Principal;
+import java.util.List;
 
 @Controller
 public class UserController {
@@ -19,10 +23,20 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public String listUsers(Model model, SecurityContextHolderAwareRequestWrapper request) {
+    public String listUsers(Model model, SecurityContextHolderAwareRequestWrapper request, Principal principal) {
+        String email = principal.getName();
+        User signedUser = userService.getUserByEmail(email);
         boolean isAdminSigned = request.isUserInRole("ROLE_ADMIN");
 
-        model.addAttribute("users", userService.findAll());
+        List<User> users;
+
+        if (isAdminSigned) {
+            users = userService.findAll();
+        } else {
+            users = userService.getAllByMyProject(signedUser);
+        }
+
+        model.addAttribute("users", users);
         model.addAttribute("isAdminSigned", isAdminSigned);
         return "views/users";
     }

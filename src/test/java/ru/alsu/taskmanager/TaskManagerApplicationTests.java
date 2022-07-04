@@ -1,4 +1,4 @@
-package pl.rengreen.taskmanager;
+package ru.alsu.taskmanager;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

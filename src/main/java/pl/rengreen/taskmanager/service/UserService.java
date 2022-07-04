@@ -18,4 +18,6 @@ public interface UserService {
     User getUserById(Long userId);
 
     void deleteUser(Long id);
+
+    List<User> getAllByMyProject(User user);
 }
